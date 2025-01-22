@@ -1,7 +1,10 @@
 import { createLogger, importDefault, isFile, isReadable, Logger, printZodErrors } from '@layerzerolabs/io-devtools'
 import type { SafeParseReturnType, ZodType, ZodTypeDef } from 'zod'
 import type { OmniGraph } from '@/omnigraph'
-import { resolve } from 'path'
+import { resolve, join } from 'path'
+
+import { endpointIdToNetwork, endpointIdToChainType, ChainType } from '@layerzerolabs/lz-definitions'
+import { nonEvmAddress } from '@/common'
 
 export interface CreateConfigLoadFlowArgs<TOmniGraph = OmniGraph> {
     configSchema: ZodType<TOmniGraph, ZodTypeDef, unknown>
@@ -13,6 +16,53 @@ export interface ConfigLoadFlowArgs {
 }
 
 export type ConfigLoadFlow<TOmniGraph = OmniGraph> = (args: ConfigLoadFlowArgs) => Promise<TOmniGraph>
+
+/*
+ * @Shankar: This is a helper function to get the address of a contract from the generated deployment file
+ * This is to populate the OmniGraph (aka the lz config parse) with non evm addresses
+ */
+export async function getOmniAddress(eid: number, contractName?: string, address?: string): Promise<string> {
+    const rootDir = process.cwd()
+    const networkName = endpointIdToNetwork(eid)
+    let deploymentFile: string
+    let parsedAddress: string
+    // nonEvmAddress is the default address which gets replaced in an earlier call stack with the native address fetched from the deployment file
+    // mentally map it to a null in this function
+    if (!address) {
+        parsedAddress = nonEvmAddress()
+    } else {
+        parsedAddress = address
+    }
+    if (!contractName && parsedAddress == nonEvmAddress()) {
+        throw new Error('Contract name or address is required')
+    }
+    if (contractName && parsedAddress == nonEvmAddress()) {
+        deploymentFile = join(rootDir, 'deployments', networkName, contractName)
+        switch (endpointIdToChainType(eid)) {
+            case ChainType.EVM: {
+                {
+                    const deployment = (await importDefault(deploymentFile)) as { address: string }
+                    return deployment.address
+                }
+            }
+            case ChainType.SOLANA: {
+                {
+                    const deployment = (await importDefault(deploymentFile)) as { oftStore: string }
+                    return deployment.oftStore
+                }
+            }
+            case ChainType.APTOS: {
+                {
+                    const deployment = (await importDefault(deploymentFile)) as { address: string }
+                    return deployment.address
+                }
+            }
+            default:
+                throw new Error(`Unsupported chain type: ${eid}`)
+        }
+    }
+    return parsedAddress ?? ''
+}
 
 /**
  * A flow that loads a configuration file from `configPath` and validates it against a `configSchema`.
@@ -111,5 +161,48 @@ export const createConfigLoadFlow =
             )
         }
 
-        return configParseResult.data
+        const baseGraph = configParseResult.data as OmniGraph
+
+        const graph: OmniGraph = {
+            contracts: [],
+            connections: [],
+        }
+
+        for (const contract of baseGraph.contracts) {
+            const omniContract = {
+                ...contract,
+                point: {
+                    ...contract.point,
+                    address: await getOmniAddress(
+                        contract.point.eid,
+                        contract.point.contractName ?? undefined,
+                        contract.point.address
+                    ),
+                },
+            }
+            graph.contracts.push(omniContract)
+        }
+
+        for (const connection of baseGraph.connections) {
+            const omniToAddress = await getOmniAddress(
+                connection.vector.to.eid,
+                connection.vector.to.contractName ?? undefined,
+                connection.vector.to.address
+            )
+
+            const omniFromAddress = await getOmniAddress(
+                connection.vector.from.eid,
+                connection.vector.from.contractName ?? undefined,
+                connection.vector.from.address
+            )
+
+            graph.connections.push({
+                vector: {
+                    from: { ...connection.vector.from, address: omniFromAddress },
+                    to: { ...connection.vector.to, address: omniToAddress },
+                },
+            })
+        }
+
+        return graph as TOmniGraph
     }

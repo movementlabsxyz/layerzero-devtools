@@ -1,4 +1,4 @@
-import { formatEid, type OmniPoint } from '@layerzerolabs/devtools'
+import { formatEid, type OmniPoint, nonEvmAddress } from '@layerzerolabs/devtools'
 import pMemoize from 'p-memoize'
 import { OmniContract } from '@layerzerolabs/devtools-evm'
 import { Contract } from '@ethersproject/contracts'
@@ -6,7 +6,8 @@ import assert from 'assert'
 import { OmniContractFactoryHardhat, OmniDeployment } from './types'
 import { createGetHreByEid } from '@/runtime'
 import { assertHardhatDeploy } from '@/internal/assertions'
-import { createModuleLogger } from '@layerzerolabs/io-devtools'
+import { createModuleLogger, importDefault } from '@layerzerolabs/io-devtools'
+import { endpointIdToChainType, ChainType } from '@layerzerolabs/lz-definitions'
 
 export const omniDeploymentToPoint = ({ eid, deployment }: OmniDeployment): OmniPoint => ({
     eid,
@@ -25,9 +26,9 @@ export const createContractFactory = (environmentFactory = createGetHreByEid()):
 
         const networkLabel = `${formatEid(eid)} (${env.network.name})`
         const logger = createModuleLogger(`Contract factory @ ${networkLabel}`)
-
         // If we have both the contract name & address, we go off artifacts
-        if (contractName != null && address != null) {
+        // @Shankar: Artifacts are only available for EVM
+        if (endpointIdToChainType(eid) === ChainType.EVM && contractName != null && address != null) {
             logger.verbose(`Looking for contract ${contractName} on address ${address} in artifacts`)
 
             const artifact = await env.deployments.getArtifact(contractName).catch((error) => {
@@ -43,13 +44,51 @@ export const createContractFactory = (environmentFactory = createGetHreByEid()):
         }
 
         // If we have the contract name but no address, we need to get it from the deployments by name
+        /*
+         * @Shankar: This mode lets us grab deployments from deployment files - we follow the same pattern for all vms
+         *
+         * @Shankar: We'll need to add support for non-EVM chains here, the default implementation is for EVM as the returned object expects ethers.Contract
+         * We work around this by creating a blank contract for non-EVM chains with the address (0x0....0dead) with abi ([])
+         */
         if (contractName != null && address == null) {
             logger.verbose(`Looking for contract ${contractName} in deployments`)
+            const networkName = env.deployments.getNetworkName()
 
-            const deployment = await env.deployments.getOrNull(contractName)
-            assert(deployment != null, `Could not find a deployment for contract '${contractName}' on ${networkLabel}`)
+            const currentDir = process.cwd()
+            let baseAddress: string
 
-            return omniDeploymentToContract({ eid, deployment })
+            let omniContract: OmniContract
+            const deployment = (await importDefault(
+                `${currentDir}/deployments/${networkName}/${contractName}.json`
+            )) as { oftStore: string; address: string; abi: string[] }
+
+            if (!deployment) {
+                throw new Error(`Could not find a deployment for contract '${contractName}' on ${networkLabel}`)
+            }
+
+            switch (endpointIdToChainType(eid)) {
+                case ChainType.SOLANA: {
+                    baseAddress = deployment.address
+                    const blankContract = new Contract(nonEvmAddress(), [])
+                    omniContract = { eid, address: baseAddress, contract: blankContract }
+                    break
+                }
+                case ChainType.APTOS: {
+                    baseAddress = deployment.address
+                    const blankContract = new Contract(nonEvmAddress(), [])
+                    omniContract = { eid, address: baseAddress, contract: blankContract }
+                    break
+                }
+                case ChainType.EVM: {
+                    const evmContract = new Contract(deployment.address, deployment.abi)
+                    omniContract = { eid, address: deployment.address, contract: evmContract }
+                    break
+                }
+                default:
+                    throw new Error('Unsupported chain type')
+            }
+
+            return omniContract
         }
 
         // And if we only have the address, we need to go get it from deployments by address

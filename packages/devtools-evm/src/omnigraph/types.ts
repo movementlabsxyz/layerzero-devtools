@@ -3,6 +3,7 @@ import type { Factory, IOmniSDK as IOmniSDKAbstract, OmniPoint, WithEid } from '
 
 export type OmniContract<TContract extends Contract = Contract> = WithEid<{
     contract: TContract
+    address?: string
 }>
 
 export type OmniContractFactory<TOmniPoint = OmniPoint> = Factory<[TOmniPoint], OmniContract>

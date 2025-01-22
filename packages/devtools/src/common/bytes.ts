@@ -225,3 +225,8 @@ const getLeftPadding = (bytes: Uint8Array, length: number): Uint8Array =>
  * @param {string} message A message to fail the assertion with if a non-zero byte is found
  */
 const assertZeroBytes = (bytes: Uint8Array, message: string) => bytes.forEach((byte) => assert(byte === 0, message))
+
+// @Shankar: This is a placeholder address for non-EVM chains to match the OmniContract return type that expects an ethers.Contract object
+export const nonEvmAddress = () => {
+    return `0x000000000000000000000000000000000000dead`
+}
