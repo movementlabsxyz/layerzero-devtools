@@ -1,4 +1,3 @@
-import { Aptos, AptosConfig } from '@aptos-labs/ts-sdk'
 import { getChain, getConnection } from '@layerzerolabs/devtools-move/sdk/moveVMConnectionBuilder'
 import { OFT } from '@layerzerolabs/devtools-move/sdk/oft'
 

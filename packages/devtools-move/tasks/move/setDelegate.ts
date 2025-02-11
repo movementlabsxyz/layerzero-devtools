@@ -1,7 +1,6 @@
 import { getConnection } from '../../sdk/moveVMConnectionBuilder'
 import { IOFT } from '../../sdk/IOFT'
 import { OFT } from '../../sdk/oft'
-import { InitiaOFT } from '../../sdk/initiaOFT'
 import { setDelegate } from './utils/moveVMOftConfigOps'
 import { getContractNameFromLzConfig, getDelegateFromLzConfig, getMoveVMOAppAddress, sendAllTxs } from './utils/utils'
 import { getAptosPrivateKey } from './utils/config'
@@ -27,8 +26,6 @@ async function executeSetDelegate(
     if (chainName === 'aptos' || chainName === 'movement') {
         const aptosPrivateKey = getAptosPrivateKey(chainName)
         oft = new OFT(moveVMConnection as Aptos, oAppAddress, accountAddress, aptosPrivateKey, eid)
-    } else if (chainName === 'initia') {
-        oft = new InitiaOFT(moveVMConnection, oAppAddress, eid)
     } else {
         throw new Error(`${chainName}-${stage} is not supported`)
     }
