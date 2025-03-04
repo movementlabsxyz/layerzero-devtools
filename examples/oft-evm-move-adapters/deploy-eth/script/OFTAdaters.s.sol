@@ -5,56 +5,46 @@ import {Script} from "forge-std/Script.sol";
 import {USDCOFTAdapter} from "../src/USDCOFTAdapter.sol";
 import {USDTOFTAdapter} from "../src/USDTOFTAdapter.sol";
 import {WETHOFTAdapter} from "../src/WETHOFTAdapter.sol";
+import {WBTCOFTAdapter} from "../src/WBTCOFTAdapter.sol";
 import {EnforcedOptionParam} from "layerzerolabs/oapp/contracts/oapp/interfaces/IOAppOptionsType3.sol";
 
 contract OFTAdaptersScript is Script {
     // Mainnet
-    address public usdc = 0x3073f7aAA4DB83f95e9FFf17424F71D4751a3073;
-    address public usdt = 0x3073f7aAA4DB83f95e9FFf17424F71D4751a3073;
-    address public weth = 0x3073f7aAA4DB83f95e9FFf17424F71D4751a3073;
+    address public usdc = 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48;
+    address public usdt = 0xdAC17F958D2ee523a2206206994597C13D831ec7;
+    address public weth = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
+    address public wbtc = 0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599;
 
     address public lzEndpoint = 0x1a44076050125825900e736c501f859c50fE728c;
     uint32 public movementEid = 30325;
 
-    // Testnet
-    address public tUsdc = 0x3D40fF7Ff9D5B01Cb5413e7E5C18Aa104A6506a5;
-    address public tUsdt = 0xC1c94Dde81053612aC602ba39b6AfBd3CfE6a8Bc;
-    address public tWeth = 0x50e288885258bC62da02d7Bd1e37d5c7B27F814F;
-    address public tLzEndpoint = 0x6EDCE65403992e310A62460808c4b910D972f10f;
-    uint32 public tMovementEid = 40325;
-
     USDCOFTAdapter public usdcA;
     USDTOFTAdapter public usdtA;
     WETHOFTAdapter public wethA;
+    WBTCOFTAdapter public wbtcA;
     // Enforced options: worker -> gas units
-    bytes public options = abi.encodePacked(uint176(0x00030100110100000000000000000000000000001388));
+    bytes public options = abi.encodePacked(uint176(0x00030100110100000000000000000000000000030D40));
     // Movement MOVEOFTAdapter in bytes32
-    bytes32 public usdcOftAdapterBytes32 = 0x33987308d6698c3def1f155c8ea394360e9756b0a22e64fb20834327f04a1e42;
-    bytes32 public usdtOftAdapterBytes32 = 0x9cda672762a6f88e4b608428dd063e03aaf6712f0a427923dd0f1416afa1c075;
-    bytes32 public wethOftAdapterBytes32 = 0x2fa1f2914aa17d239410cb81ab46dd8fa9230272c58bc84e9e8b971eded79ca5;
+    bytes32 public usdcOftAdapterBytes32 = 0x60e936500b90baa57aa560ccd8e0b037419c028905e78ab7df5ed88f682a2529;
+    bytes32 public usdtOftAdapterBytes32 = 0x079f3ba28add0f0c113c0799d6e92e8538c02f1ce2d9ad4ca45929907b77bdc9;
+    bytes32 public wethOftAdapterBytes32 = 0xead494f359ae1e57cf850bae3afb1460b1352e7396dfedd2ec494295d33cc99a;
+    bytes32 public wbtcOftAdapterBytes32 = 0xb42d482d7a80d56c03493f8bd652504f1f7f67e2f66183b1854f3b162ef798bb;
 
     function run() public {
         uint256 pk = vm.envUint("PRIVATE_KEY");
         vm.startBroadcast(pk);
         address owner = vm.addr(pk);
 
-        // switch to Testnet variables if not on Mainnet
-        if (block.chainid != 1) {
-            usdc = tUsdc;
-            usdt = tUsdt;
-            weth = tWeth;
-            movementEid = tMovementEid;
-            lzEndpoint = tLzEndpoint;
-        }
-
         // Deploy the adapter
         usdcA = new USDCOFTAdapter(usdc, lzEndpoint, owner);
         usdtA = new USDTOFTAdapter(usdt, lzEndpoint, owner);
         wethA = new WETHOFTAdapter(weth, lzEndpoint, owner);
+        wbtcA = new WBTCOFTAdapter(wbtc, lzEndpoint, owner);
 
         usdcA.setPeer(movementEid, usdcOftAdapterBytes32);
         usdtA.setPeer(movementEid, usdtOftAdapterBytes32);
         wethA.setPeer(movementEid, wethOftAdapterBytes32);
+        wbtcA.setPeer(movementEid, wbtcOftAdapterBytes32);
 
         EnforcedOptionParam[] memory enforcedParams = new EnforcedOptionParam[](2);
         enforcedParams[0] = EnforcedOptionParam({eid: movementEid, msgType: uint16(1), options: options});
@@ -63,5 +53,6 @@ contract OFTAdaptersScript is Script {
         usdcA.setEnforcedOptions(enforcedParams);
         usdtA.setEnforcedOptions(enforcedParams);
         wethA.setEnforcedOptions(enforcedParams);
+        wbtcA.setEnforcedOptions(enforcedParams);
     }
 }
