@@ -6,12 +6,10 @@ import {OFTAdapter} from "layerzerolabs/oapp/contracts/oft/OFTAdapter.sol";
 import {RateLimiter} from "layerzerolabs/oapp/contracts/oapp/utils/RateLimiter.sol";
 
 contract MOVEOFTAdapter is OFTAdapter, RateLimiter {
-    constructor(address _token, address _lzEndpoint, address _delegate, RateLimiter.RateLimitConfig[] memory _rateLimitConfig)
+    constructor(address _token, address _lzEndpoint, address _delegate)
         OFTAdapter(_token, _lzEndpoint, _delegate)
         Ownable(_delegate)
-    {
-        _setRateLimits(_rateLimitConfig);
-    }
+    {}
 
     /**
      * @dev Returns the number of shared decimals for the OFTAdapter.

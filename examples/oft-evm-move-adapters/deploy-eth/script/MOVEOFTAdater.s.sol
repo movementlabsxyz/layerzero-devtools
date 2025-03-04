@@ -8,12 +8,12 @@ import {MOVEMock, ERC20} from "../src/MOVEMock.sol";
 import {EnforcedOptionParam} from "layerzerolabs/oapp/contracts/oapp/interfaces/IOAppOptionsType3.sol";
 
 contract MOVEOFTAdapterScript is Script {
-    
     MOVEOFTAdapter public adapter;
     // Mainnet
     address public move = 0x3073f7aAA4DB83f95e9FFf17424F71D4751a3073;
     address public lzEndpoint = 0x1a44076050125825900e736c501f859c50fE728c;
     uint32 public movementEid = 30325;
+    uint32 public ethereumEid = 30101;
 
     // Testnet
     address public tMove = 0xcf28bDf5352881cAc32bA7C94265Ac7C720B7DC6;
@@ -21,9 +21,10 @@ contract MOVEOFTAdapterScript is Script {
     uint32 public tMovementEid = 40325;
 
     // Enforced options: worker -> gas units
-    bytes public options = abi.encodePacked(uint176(0x00030100110100000000000000000000000000001388));
+    bytes public options = abi.encodePacked(uint176(0x00030100110100000000000000000000000000030D40));
+
     // Movement MOVEOFTAdapter in bytes32
-    bytes32 public moveOftAdapterBytes32 = 0x1f6569607261e5d6c8e1053325e4b9a3b2966d3a1a58efd627381069d453b9de;
+    bytes32 public moveOftAdapterBytes32 = 0x4fe77e45fb74af1ce4f6e90f5d1c9b68ec68e8693eb8401dc09943f23764a3cd;
 
     function run() public {
         uint256 pk = vm.envUint("PRIVATE_KEY");
@@ -37,38 +38,20 @@ contract MOVEOFTAdapterScript is Script {
             lzEndpoint = tLzEndpoint;
         }
 
-        RateLimiter.RateLimitConfig[] memory rateLimitConfigs = new RateLimiter.RateLimitConfig[](2);
-        rateLimitConfigs[0] = RateLimiter.RateLimitConfig({
-            dstEid: movementEid,
-            limit: 75000000 * 1e8,
-            window: 1 days
-        });
-        rateLimitConfigs[1] = RateLimiter.RateLimitConfig({
-            dstEid: 1, // incoming
-            limit: 0,
-            window: 1 days
-        });
         // Deploy the adapter
-        adapter = new MOVEOFTAdapter(
-                move,
-                lzEndpoint,
-                owner,
-                rateLimitConfigs
-            );
+        adapter = new MOVEOFTAdapter(move, lzEndpoint, owner);
 
+        RateLimiter.RateLimitConfig[] memory rateLimitConfigs = new RateLimiter.RateLimitConfig[](2);
+        rateLimitConfigs[0] = RateLimiter.RateLimitConfig({dstEid: movementEid, limit: 100 * 1e8, window: 1 days});
+        rateLimitConfigs[1] = RateLimiter.RateLimitConfig({dstEid: ethereumEid, limit: 0, window: 1 days});
+
+        adapter.setRateLimits(rateLimitConfigs);
+        
         adapter.setPeer(movementEid, moveOftAdapterBytes32);
-        EnforcedOptionParam[] memory enforcedParams = new EnforcedOptionParam[](2);
-        enforcedParams[0] = EnforcedOptionParam({
-            eid: movementEid,
-            msgType: uint16(1),
-            options: options
-        });
-        enforcedParams[1] = EnforcedOptionParam({
-            eid: movementEid,
-            msgType: uint16(2),
-            options: options
-        });
-        adapter.setEnforcedOptions(enforcedParams);
 
+        EnforcedOptionParam[] memory enforcedParams = new EnforcedOptionParam[](2);
+        enforcedParams[0] = EnforcedOptionParam({eid: movementEid, msgType: uint16(1), options: options});
+        enforcedParams[1] = EnforcedOptionParam({eid: movementEid, msgType: uint16(2), options: options});
+        adapter.setEnforcedOptions(enforcedParams);
     }
 }
