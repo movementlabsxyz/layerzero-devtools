@@ -9,7 +9,12 @@ import {UlnConfig} from "@layerzerolabs/lz-evm-messagelib-v2/contracts/uln/UlnBa
 
 contract DVNExecutorScript is Script {
     // Input your contract address here
-    address public adapter = 0xf1dF43A3053cd18E477233B59a25fC483C2cBe0f;
+    address public moveAdapter = 0xf1dF43A3053cd18E477233B59a25fC483C2cBe0f;
+    address public usdcAdapter = 0xc209a627a7B0a19F16A963D9f7281667A2d9eFf2;
+    address public usdtAdapter = 0x5e87D7e75B272fb7150B4d1a05afb6Bd71474950;
+    address public wethAdapter = 0x06E01cB086fea9C644a2C105A9F20cfC21A526e8;
+    address public wbtcAdapter = 0xa55688C280E725704CFe8Ea30eD33fE5B91cE6a4;
+
     ILayerZeroEndpointV2 public endpoint = ILayerZeroEndpointV2(0x1a44076050125825900e736c501f859c50fE728c);
 
     uint32 public movementEid = 30325;
@@ -31,17 +36,26 @@ contract DVNExecutorScript is Script {
         uint256 pk = vm.envUint("PRIVATE_KEY");
         vm.startBroadcast(pk);
 
+        configDVNExecutor(usdcAdapter);
+        configDVNExecutor(usdtAdapter);
+        configDVNExecutor(wethAdapter);
+        configDVNExecutor(wbtcAdapter);
+
+        vm.stopBroadcast();
+    }
+
+    function configDVNExecutor(address adapter) public {
+        
         address[] memory array = new address[](3);
         array[0] = p2pDVN;
         array[1] = horizenDVN;
         array[2] = lzDVN;
 
         address[] memory emptyArray = new address[](0);
-        UlnConfig memory ulnConfig = UlnConfig(uint64(5), uint8(3), uint8(0), uint8(0), array, emptyArray);
+        UlnConfig memory ulnConfig = UlnConfig(uint64(1), uint8(3), uint8(0), uint8(0), array, emptyArray);
         ExecutorConfig memory executorConfig = ExecutorConfig(0, lzExecutor);
         setConfigs(adapter, movementEid, sendUln302, ulnConfig, executorConfig);
         setLibraries(adapter, movementEid, sendUln302, receiveUln302);
-        vm.stopBroadcast();
     }
 
     function setConfigs(

@@ -1,30 +1,33 @@
 #!/bin/bash
 
-RPC_URL="https://bsc-testnet.public.blastapi.io"
+RPC_URL="https://eth.llamarpc.com"
 
-AMOUNT="1000000000000000000" 
+AMOUNT="1"
 
 # EXPORT YOUR PRIVATE_KEY TO THE ENVIRONMENT BEFORE PROCEEDING
 
 # OFT Adapter addresses
-USDCOFT_ADAPTER="0x9078C798192C04d473F259A86aC97d6d9D5863Ba"
-USDTOFT_ADAPTER="0xf9F7D5D9eD90B4706111653D75B187DF3283eE29"
-WETHOFT_ADAPTER="0x2E067e69598cfd2c110bC1A61a8e121f36e464Bf"
+USDC_OFT_ADAPTER="0xc209a627a7B0a19F16A963D9f7281667A2d9eFf2"
+USDT_OFT_ADAPTER="0x5e87D7e75B272fb7150B4d1a05afb6Bd71474950"
+WETH_OFT_ADAPTER="0x06E01cB086fea9C644a2C105A9F20cfC21A526e8"
+WBTC_OFT_ADAPTER="0xa55688C280E725704CFe8Ea30eD33fE5B91cE6a4"
+
 
 # Mock token addresses
-USDC_TOKEN="0x3D40fF7Ff9D5B01Cb5413e7E5C18Aa104A6506a5"
-USDT_TOKEN="0xC1c94Dde81053612aC602ba39b6AfBd3CfE6a8Bc"
-WETH_TOKEN="0x50e288885258bC62da02d7Bd1e37d5c7B27F814F"
+USDC_TOKEN="0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+USDT_TOKEN="0xdac17f958d2ee523a2206206994597c13d831ec7"
+WETH_TOKEN="0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2"
+WBTC_TOKEN="0x2260fac5e5542a773aa44fbcfedf7c193bc2c599"
 
 # Max uint256 for approval
 MAX_UINT256="115792089237316195423570985008687907853269984665640564039457584007913129639935"
 
 # Caller address in ETHEREUM
-PUBLIC_ADDRESS=0x65E467bB02984c535a79D28f6538318F46FF9A5B
+PUBLIC_ADDRESS=0xB2105464215716e1445367BEA5668F581eF7d063
 # Recipient address in MOVEMENT
-RECIPIENT_ADDRESS="0x275f508689de8756169d1ee02d889c777de1cebda3a7bbcce63ba8a27c563c6f"
+RECIPIENT_ADDRESS="0x2c161b0deea3d862fd84758fae35b8096aad5ab0ccec7e5008d88d7f8cf1282a"
 
-TARGET_EID=40325
+TARGET_EID=30325
 
 process_asset() {
     local TOKEN_ADDRESS=$1
@@ -32,16 +35,21 @@ process_asset() {
     local ASSET_NAME=$3
 
     echo "Processing $ASSET_NAME..."
-
-    echo "Minting $ASSET_NAME..."
-    cast send "$TOKEN_ADDRESS" "mint(address,uint256)" "$PUBLIC_ADDRESS"  "$AMOUNT" --rpc-url "$RPC_URL" --private-key "$PRIVATE_KEY"
+    
+    # IF MAINNET YOU NEED BALANCE PRIOR TO THIS
+    if [[ $TARGET_EID -eq 40325 ]]; then
+        echo "Minting $ASSET_NAME..."
+        cast send "$TOKEN_ADDRESS" "mint(address,uint256)" "$PUBLIC_ADDRESS"  "$AMOUNT" --rpc-url "$RPC_URL" --private-key "$PRIVATE_KEY"
+    fi
 
     echo "Checking allowance for $ASSET_NAME..."
     ALLOWANCE=$(cast call "$TOKEN_ADDRESS" "allowance(address,address)" "$PUBLIC_ADDRESS" "$OFT_ADAPTER" --rpc-url "$RPC_URL")
 
-    echo "Allowance for $ASSET_NAME: $ALLOWANCE"
+    ALLOWANCE_IN_DECIMALS=$(cast --to-dec "$ALLOWANCE")
 
-    if [[ "$ALLOWANCE" -lt "$AMOUNT" ]]; then
+    echo "Allowance for $ASSET_NAME: $ALLOWANCE_IN_DECIMALS"
+
+    if [[ "$ALLOWANCE_IN_DECIMALS" -gt "$AMOUNT" ]]; then
         echo "Approving $ASSET_NAME for OFT Adapter..."
         cast send "$TOKEN_ADDRESS" --rpc-url "$RPC_URL" "approve(address,uint256)" "$OFT_ADAPTER" "$MAX_UINT256" --private-key "$PRIVATE_KEY"
     fi
@@ -63,8 +71,9 @@ process_asset() {
 }
 
 # Process each asset
-process_asset "$USDC_TOKEN" "$USDCOFT_ADAPTER" "USDC"
-process_asset "$USDT_TOKEN" "$USDTOFT_ADAPTER" "USDT"
-process_asset "$WETH_TOKEN" "$WETHOFT_ADAPTER" "WETH"
+process_asset "$USDC_TOKEN" "$USDC_OFT_ADAPTER" "USDC"
+process_asset "$USDT_TOKEN" "$USDT_OFT_ADAPTER" "USDT"
+process_asset "$WETH_TOKEN" "$WETH_OFT_ADAPTER" "WETH"
+process_asset "$WBTC_TOKEN" "$WBTC_OFT_ADAPTER" "WBTC"
 
 echo "All transactions completed."

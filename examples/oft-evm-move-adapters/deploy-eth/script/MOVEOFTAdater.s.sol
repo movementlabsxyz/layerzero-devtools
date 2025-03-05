@@ -24,7 +24,7 @@ contract MOVEOFTAdapterScript is Script {
     bytes public options = abi.encodePacked(uint176(0x00030100110100000000000000000000000000030D40));
 
     // Movement MOVEOFTAdapter in bytes32
-    bytes32 public moveOftAdapterBytes32 = 0x4fe77e45fb74af1ce4f6e90f5d1c9b68ec68e8693eb8401dc09943f23764a3cd;
+    bytes32 public moveOftAdapterBytes32 = 0x7e4fd97ef92302eea9b10f74be1d96fb1f1511cf7ed28867b0144ca89c6ebc3c;
 
     function run() public {
         uint256 pk = vm.envUint("PRIVATE_KEY");

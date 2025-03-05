@@ -31,11 +31,17 @@ process_asset() {
     echo "Checking allowance for $ASSET_NAME..."
     ALLOWANCE=$(cast call "$TOKEN_ADDRESS" "allowance(address,address)" "$PUBLIC_ADDRESS" "$OFT_ADAPTER" --rpc-url "$RPC_URL")
 
-    echo "Allowance for $ASSET_NAME: $ALLOWANCE"
 
-    if [[ "$ALLOWANCE" -lt "$AMOUNT" ]]; then
+    ALLOWANCE_IN_DECIMALS=$(cast --to-dec "$ALLOWANCE")
+
+    echo "Allowance for $ASSET_NAME: $ALLOWANCE_IN_DECIMALS"
+
+
+    if [[ "$ALLOWANCE_IN_DECIMALS" -lt "$AMOUNT" ]]; then
         echo "Approving $ASSET_NAME for OFT Adapter..."
         cast send "$TOKEN_ADDRESS" --rpc-url "$RPC_URL" "approve(address,uint256)" "$OFT_ADAPTER" "$MAX_UINT256" --private-key "$PRIVATE_KEY"
+    else
+        echo "Sufficient allowance for $ASSET_NAME."
     fi
 
     echo "Quoting transfer fee for $ASSET_NAME..."

@@ -2,24 +2,25 @@
 
 RPC_URL="https://testnet.bardock.movementnetwork.xyz/v1"
 
-AMOUNT="1000000" # only sending back 1 token
+AMOUNT="1" # only sending back 1 token
 
 # EXPORT YOUR PRIVATE_KEY TO THE ENVIRONMENT BEFORE PROCEEDING
 # REQUIRES APTOS CLI TO BE INSTALLED
 
 # OFT Adapter addresses
 
-# Mock token addresses
-USDC_TOKEN="0x33987308d6698c3def1f155c8ea394360e9756b0a22e64fb20834327f04a1e42"
-USDT_TOKEN="0x9cda672762a6f88e4b608428dd063e03aaf6712f0a427923dd0f1416afa1c075"
-WETH_TOKEN="0x2fa1f2914aa17d239410cb81ab46dd8fa9230272c58bc84e9e8b971eded79ca5"
+# token addresses
+USDC_TOKEN="0x4d2969d384e440db9f1a51391cfc261d1ec08ee1bdf7b9711a6c05d485a4110a"
+USDT_TOKEN="0x38cdb3f0afabee56a3393793940d28214cba1f5781e13d5db18fa7079f60ab55"
+WETH_TOKEN="0x3dfe1ac4574c7dbbe6f1c5ba862de88fc3e7d3cf8eba95ef1abf32b582889e6d"
+WBTC_TOKEN="0xbdf86868a32dbae96f2cd50ab05b4be43b92e84e793a4fc01b5b460cc38fdc14"
 
 # Recipient address in ETHEREUM
-RECIPIENT_ADDRESS="0x65E467bB02984c535a79D28f6538318F46FF9A5B"
+RECIPIENT_ADDRESS="0xB2105464215716e1445367BEA5668F581eF7d063"
 # Caller address in MOVEMENT
 PUBLIC_ADDRESS="0x275f508689de8756169d1ee02d889c777de1cebda3a7bbcce63ba8a27c563c6f"
 
-TARGET_EID=40102 #BSC
+TARGET_EID=30101 #MAINNET
 
 process_asset() {
     local TOKEN_ADDRESS=$1
@@ -52,5 +53,6 @@ process_asset() {
 process_asset "$USDC_TOKEN" "USDC"
 process_asset "$USDT_TOKEN" "USDT"
 process_asset "$WETH_TOKEN" "WETH"
+process_asset "$WBTC_TOKEN" "WBTC"
 
 echo "All transactions completed."
