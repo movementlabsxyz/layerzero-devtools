@@ -15,6 +15,8 @@ contract DVNExecutorScript is Script {
     address public wethAdapter = 0x06E01cB086fea9C644a2C105A9F20cfC21A526e8;
     address public wbtcAdapter = 0xa55688C280E725704CFe8Ea30eD33fE5B91cE6a4;
 
+    uint64 public confirmations = 1;
+
     ILayerZeroEndpointV2 public endpoint = ILayerZeroEndpointV2(0x1a44076050125825900e736c501f859c50fE728c);
 
     uint32 public movementEid = 30325;
@@ -31,11 +33,13 @@ contract DVNExecutorScript is Script {
 
     uint32 public constant EXECUTOR_CONFIG_TYPE = 1;
     uint32 public constant ULN_CONFIG_TYPE = 2;
+    uint32 public constant RECEIVE_CONFIG_TYPE = 2;
 
     function run() public {
         uint256 pk = vm.envUint("PRIVATE_KEY");
         vm.startBroadcast(pk);
 
+        configDVNExecutor(moveAdapter);
         configDVNExecutor(usdcAdapter);
         configDVNExecutor(usdtAdapter);
         configDVNExecutor(wethAdapter);
@@ -46,34 +50,44 @@ contract DVNExecutorScript is Script {
 
     function configDVNExecutor(address adapter) public {
         
+        setLibraries(adapter, movementEid, sendUln302, receiveUln302);
+
         address[] memory array = new address[](3);
         array[0] = p2pDVN;
         array[1] = horizenDVN;
         array[2] = lzDVN;
 
         address[] memory emptyArray = new address[](0);
-        UlnConfig memory ulnConfig = UlnConfig(uint64(1), uint8(3), uint8(0), uint8(0), array, emptyArray);
+        UlnConfig memory ulnConfig = UlnConfig(uint64(confirmations), uint8(3), uint8(0), uint8(0), array, emptyArray);
         ExecutorConfig memory executorConfig = ExecutorConfig(0, lzExecutor);
-        setConfigs(adapter, movementEid, sendUln302, ulnConfig, executorConfig);
-        setLibraries(adapter, movementEid, sendUln302, receiveUln302);
+        setConfigs(adapter, movementEid, sendUln302, receiveUln302, ulnConfig, executorConfig);
     }
 
     function setConfigs(
         address contractAddress,
         uint32 remoteEid,
         address sendLibraryAddress,
+        address receiveLibraryAddress,
         UlnConfig memory ulnConfig,
         ExecutorConfig memory executorConfig
     ) internal {
-        SetConfigParam[] memory setConfigParams = new SetConfigParam[](2);
+        SetConfigParam[] memory sendConfigParams = new SetConfigParam[](2);
 
-        setConfigParams[0] =
+        sendConfigParams[0] =
             SetConfigParam({eid: remoteEid, configType: EXECUTOR_CONFIG_TYPE, config: abi.encode(executorConfig)});
 
-        setConfigParams[1] =
+        sendConfigParams[1] =
             SetConfigParam({eid: remoteEid, configType: ULN_CONFIG_TYPE, config: abi.encode(ulnConfig)});
 
-        endpoint.setConfig(contractAddress, sendLibraryAddress, setConfigParams);
+        SetConfigParam[] memory receiveConfigParams = new SetConfigParam[](1);
+        receiveConfigParams[0] = SetConfigParam({
+            eid: remoteEid,
+            configType: RECEIVE_CONFIG_TYPE,
+            config: abi.encode(ulnConfig)
+        });
+
+        endpoint.setConfig(contractAddress, sendLibraryAddress, sendConfigParams);
+        endpoint.setConfig(contractAddress, receiveLibraryAddress, receiveConfigParams);
     }
 
     function setLibraries(address _oapp, uint32 _eid, address _sendLib, address _receiveLib) internal {

@@ -49,10 +49,10 @@ process_asset() {
 }
 
 # Process each asset
-# aptos init --network custom --rest-url $RPC_URL --skip-faucet --private-key $PRIVATE_KEY --assume-yes 
+aptos init --network custom --rest-url $RPC_URL --skip-faucet --private-key $PRIVATE_KEY --assume-yes
 process_asset "$USDC_TOKEN" "USDC"
 process_asset "$USDT_TOKEN" "USDT"
 process_asset "$WETH_TOKEN" "WETH"
-process_asset "$WBTC_TOKEN" "WBTC"
+# process_asset "$WBTC_TOKEN" "WBTC"
 
 echo "All transactions completed."
