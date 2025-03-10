@@ -31,18 +31,11 @@ contract MOVEOFTAdapterScript is Script {
         vm.startBroadcast(pk);
         address owner = vm.addr(pk);
 
-        // switch to Testnet variables if not on Mainnet
-        if (block.chainid != 1) {
-            move = tMove;
-            movementEid = tMovementEid;
-            lzEndpoint = tLzEndpoint;
-        }
-
         // Deploy the adapter
         adapter = new MOVEOFTAdapter(move, lzEndpoint, owner);
 
         RateLimiter.RateLimitConfig[] memory rateLimitConfigs = new RateLimiter.RateLimitConfig[](2);
-        rateLimitConfigs[0] = RateLimiter.RateLimitConfig({dstEid: movementEid, limit: 100 * 1e8, window: 1 days});
+        rateLimitConfigs[0] = RateLimiter.RateLimitConfig({dstEid: movementEid, limit: 500 * 1e8, window: 1 days});
         rateLimitConfigs[1] = RateLimiter.RateLimitConfig({dstEid: ethereumEid, limit: 0, window: 1 days});
 
         adapter.setRateLimits(rateLimitConfigs);
@@ -55,3 +48,6 @@ contract MOVEOFTAdapterScript is Script {
         adapter.setEnforcedOptions(enforcedParams);
     }
 }
+
+// forge verify-contract --rpc-url https://mainnet.infura.io/v3/c865becd79284d74ad4d002251086d22 --etherscan-api-key E53T4544VGXHPVGZIN1ZHZAPM7NIUEGEXY --constructor-args $(cast abi-encode "constructor(address,address,address)" 0x3073f7aAA4DB83f95e9FFf17424F71D4751a3073 0x1a44076050125825900e736c501f859c50fE728c 0xB2105464215716e1445367BEA5668F581eF7d063) 0xf1dF43A3053cd18E477233B59a25fC483C2cBe0f
+

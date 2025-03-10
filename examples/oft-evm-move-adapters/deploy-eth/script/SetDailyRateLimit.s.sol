@@ -10,10 +10,10 @@ import {EnforcedOptionParam} from "layerzerolabs/oapp/contracts/oapp/interfaces/
 contract DailyRateLimitScript is Script {
     
     // Input your contract address here
-    MOVEOFTAdapter public adapter = MOVEOFTAdapter(address(0x2104D31cCB7ACEDc572bDA19367A3AaF52E2ff5e));
+    MOVEOFTAdapter public adapter = MOVEOFTAdapter(0xf1dF43A3053cd18E477233B59a25fC483C2cBe0f);
 
-    uint32 public movementEid = 40325;
-    uint32 public incomingEid = 40102;
+    uint32 public movementEid = 30325;
+    uint32 public ethereumEid = 30101;
 
     function run() public {
         uint256 pk = vm.envUint("PRIVATE_KEY");
@@ -21,11 +21,11 @@ contract DailyRateLimitScript is Script {
         RateLimiter.RateLimitConfig[] memory rateLimitConfigs = new RateLimiter.RateLimitConfig[](2);
         rateLimitConfigs[0] = RateLimiter.RateLimitConfig({
             dstEid: movementEid,
-            limit: 75000000 * 1e8,
+            limit: 500 * 1e8,
             window: 1 days
         });
         rateLimitConfigs[1] = RateLimiter.RateLimitConfig({
-            dstEid: incomingEid, // incoming
+            dstEid: ethereumEid, // incoming
             limit: 0, // if 0, no incoming limit
             window: 1 days
         });
