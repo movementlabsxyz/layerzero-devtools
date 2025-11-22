@@ -5,6 +5,7 @@ on:
     branches:
       - rubujubi/add-semgrep-move-action
       - main
+# TODO: add path restrictions for only .move files here later
   pull_request:
     paths:
       - '**/*.move'
@@ -55,6 +56,6 @@ jobs:
       - name: Upload Semgrep results as artifact
         uses: actions/upload-artifact@v4
         with:
-          name: semgrep-move-results
+          name: semgrep-move-results-${{ github.run_id }}
           path: semgrep-move-results.sarif
         if: always()
