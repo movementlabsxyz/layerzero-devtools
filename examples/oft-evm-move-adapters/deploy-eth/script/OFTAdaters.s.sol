@@ -10,8 +10,6 @@ import {EnforcedOptionParam} from "layerzerolabs/oapp/contracts/oapp/interfaces/
 contract OFTAdaptersScript is Script {
     // Mainnet
     address public usdc = 0x3073f7aAA4DB83f95e9FFf17424F71D4751a3073;
-    address public usdt = 0x3073f7aAA4DB83f95e9FFf17424F71D4751a3073;
-    address public weth = 0x3073f7aAA4DB83f95e9FFf17424F71D4751a3073;
 
     address public lzEndpoint = 0x1a44076050125825900e736c501f859c50fE728c;
     uint32 public movementEid = 30325;
