@@ -682,4 +682,99 @@ module oft::move_oft_adapter_tests {
         let (min_amount_ld, max_amount_ld) = oft_common::oft_limit::unpack_oft_limit(oft_limit);
         assert!(min_amount_ld == 0 && max_amount_ld == 2500, 3);
     }
+
+    #[test]
+    #[expected_failure(abort_code = oft::oft_impl_config::EEXCEEDED_RATE_LIMIT)]
+    fun test_credit_rate_limit_on_endpoint_30325() {
+        let mint_ref = setup();
+
+        // Set up timestamp for rate limiting
+        timestamp::set_time_has_started_for_testing(&create_signer_for_test(@std));
+
+        // Configure rate limit for endpoint 30325 (hardcoded in credit function)
+        // Limit: 1000 tokens, Window: 100 seconds
+        let admin = &create_signer_for_test(@oft_admin);
+        move_oft_adapter::set_rate_limit(admin, 30325, 1000, 100);
+
+        let (limit, window) = move_oft_adapter::rate_limit_config(30325);
+        assert!(limit == 1000 && window == 100, 0);
+
+        // First, debit tokens to escrow so we have balance to credit from
+        let escrow_amount = 2000u64;
+        let deposit = mint(&mint_ref, escrow_amount);
+        let (_s, _r) = move_oft_adapter::debit_fungible_asset(@0x999, &mut deposit, 0, 30100);
+        burn_token_for_test(deposit);
+
+        // Verify escrow has funds
+        let escrow_balance = primary_fungible_store::balance(escrow_address(), move_oft_adapter::metadata());
+        assert!(escrow_balance == escrow_amount, 1);
+
+        let recipient = @0x8888;
+        create_account_for_test(recipient);
+
+        // First credit: 600 tokens (within limit of 1000)
+        let credited1 = credit(recipient, 600, 30325, option::none());
+        assert!(credited1 == 600, 2);
+
+        // Verify recipient received the tokens
+        let balance = primary_fungible_store::balance(recipient, move_oft_adapter::metadata());
+        assert!(balance == 600, 3);
+
+        // Second credit: 500 tokens (total would be 1100, exceeding limit of 1000)
+        // This should fail with EEXCEEDED_RATE_LIMIT
+        let _credited2 = credit(recipient, 500, 30325, option::none());
+    }
+
+    #[test]
+    fun test_credit_rate_limit_reset_after_window_30325() {
+        let mint_ref = setup();
+
+        // Set up timestamp for rate limiting
+        timestamp::set_time_has_started_for_testing(&create_signer_for_test(@std));
+
+        // Configure rate limit for endpoint 30325
+        // Limit: 1000 tokens, Window: 100 seconds
+        let admin = &create_signer_for_test(@oft_admin);
+        move_oft_adapter::set_rate_limit(admin, 30325, 1000, 100);
+
+        let (limit, window) = move_oft_adapter::rate_limit_config(30325);
+        assert!(limit == 1000 && window == 100, 0);
+
+        // First, debit tokens to escrow so we have balance to credit from
+        let escrow_amount = 3000u64;
+        let deposit = mint(&mint_ref, escrow_amount);
+        let (_s, _r) = move_oft_adapter::debit_fungible_asset(@0x999, &mut deposit, 0, 30100);
+        burn_token_for_test(deposit);
+
+        // Verify escrow has funds
+        let escrow_balance = primary_fungible_store::balance(escrow_address(), move_oft_adapter::metadata());
+        assert!(escrow_balance == escrow_amount, 1);
+
+        let recipient = @0x8888;
+        create_account_for_test(recipient);
+
+        // First credit: 600 tokens (within limit of 1000)
+        let credited1 = credit(recipient, 600, 30325, option::none());
+        assert!(credited1 == 600, 2);
+
+        // Verify recipient received the tokens
+        let balance = primary_fungible_store::balance(recipient, move_oft_adapter::metadata());
+        assert!(balance == 600, 3);
+
+        // Advance time beyond the window (101 seconds in microseconds)
+        timestamp::fast_forward_seconds(101);
+
+        // After the window passes, rate limit should reset
+        // Credit 800 tokens - should succeed because we're in a new window
+        let credited2 = credit(recipient, 800, 30325, option::none());
+        assert!(credited2 == 800, 4);
+
+        // Verify recipient received the additional tokens
+        let balance = primary_fungible_store::balance(recipient, move_oft_adapter::metadata());
+        assert!(balance == 1400, 5); // 600 + 800
+
+        // Verify escrow balance decreased accordingly
+        let escrow_balance = primary_fungible_store::balance(escrow_address(), move_oft_adapter::metadata());
+        assert!(escrow_balance == 1600, 6); // 3000 - 600 - 800
+    }
 }
