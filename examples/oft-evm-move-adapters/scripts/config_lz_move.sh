@@ -10,7 +10,7 @@ set -euo pipefail
 FUNCTION_ID="${FUNCTION_ID:-0x7e4fd97ef92302eea9b10f74be1d96fb1f1511cf7ed28867b0144ca89c6ebc3c::oapp_core::set_config}"
 
 # Remote EID to configure for (e.g. Ethereum 30101, HyperEVM 30367, etc.)
-REMOTE_EID="${REMOTE_EID:-30184}"
+REMOTE_EID="${REMOTE_EID:-30367}"
 
 # Message libraries (send and receive ULN on Movement)
 SEND_LIB_ADDR="${SEND_LIB_ADDR:-0xc33752e0220faf79e45385dd73fb28d681dcd9f1569a1480725507c1f3c3aba9}"
@@ -26,7 +26,7 @@ LZ_DVN="${LZ_DVN:-0xdf8f0a53b20f1656f998504b81259698d126523a31bdbbae45ba1e8a3078
 
 
 # confirmations (ignored if use_default_for_confirmations=true, but still encoded)
-SEND_CONFIRMATIONS="${CONFIRMATIONS:-30000}"
+SEND_CONFIRMATIONS="${CONFIRMATIONS:-500}"
 RECEIVE_CONFIRMATIONS="${CONFIRMATIONS:-10}"
 
 # Max message size for executor config (u32)
