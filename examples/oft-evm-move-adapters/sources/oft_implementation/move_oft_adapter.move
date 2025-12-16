@@ -53,7 +53,7 @@ module oft::move_oft_adapter {
     public(friend) fun credit(
         to: address,
         amount_ld: u64,
-        src_eid: u32,
+        _src_eid: u32,
         lz_receive_value: Option<FungibleAsset>,
     ): u64 acquires OftImpl, PauserStore {
         // Global inflow pause gate
