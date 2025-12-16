@@ -318,7 +318,6 @@ module oft::oft_using_move_oft_adapter_tests {
         );
 
         // Modified behavior on move_oft_adapter.move,  send_withdraw should NOT be offset by lz_receive.
-                // Succeeds: consumes 15_000_000_000 of 19_000_000_000 in flight
         send_withdraw(alice, DST_EID, bob, amount, amount, vector[], vector[], vector[], 0, 0);
     }
 
