@@ -117,7 +117,7 @@ def main():
     code_bytes_list = []
     for module_file in module_files:
         module_decimal, module_size, module_bytes = read_file_as_decimal_array(module_file)
-        print(f"  - {module_file.name}: {module_size} bytes")
+        print(f"  - {module_file.name}")
         code_vectors.append(module_decimal)
         code_bytes_list.append(module_bytes)
 
