@@ -51,8 +51,6 @@ Output:
     - code: vector<vector<u8>> from module .mv files    
 """
 
-import os
-import json
 from pathlib import Path
 
 def read_file_as_decimal_array(filepath):
