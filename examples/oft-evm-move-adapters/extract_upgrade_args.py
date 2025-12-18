@@ -43,8 +43,8 @@ Then compile with
 movement move compile --save-metadata
 
 Finally, run the script to extract the upgrade arguments:
-Usage:
-    python3 extract_upgrade_args.py
+
+python3 extract_upgrade_args.py
 
 Output:
     - metadata_serialized: vector<u8> from package-metadata.bcs
