@@ -32,3 +32,11 @@ dist
 
 # .env
 **/.env
+
+# Move/Aptos local config
+**/.movement/
+**/.aptos/
+
+# Move upgrade artifacts
+**/metadata_arg.txt
+**/code_arg.txt
