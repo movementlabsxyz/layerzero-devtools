@@ -257,6 +257,7 @@ module oft::oft_using_move_oft_adapter_tests {
     }
 
     #[test]
+    #[expected_failure(abort_code = oft::oft_impl_config::EEXCEEDED_RATE_LIMIT)]
     fun test_send_rate_limit_netted_by_receive() {
         let mint_ref = setup(SRC_EID, DST_EID);
         set_rate_limit(&create_signer_for_test(@oft_admin), DST_EID, 19_000_000_000, 10);
@@ -316,7 +317,7 @@ module oft::oft_using_move_oft_adapter_tests {
             vector[],
         );
 
-        // Succeeds: consumes 15_000_000_000 of 19_000_000_000 in flight
+        // Modified behavior on move_oft_adapter.move,  send_withdraw should NOT be offset by lz_receive.
         send_withdraw(alice, DST_EID, bob, amount, amount, vector[], vector[], vector[], 0, 0);
     }
 
