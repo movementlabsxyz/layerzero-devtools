@@ -3,7 +3,7 @@
 Script to extract upgrade arguments from Move build artifacts.
 This converts the compiled bytecode and metadata to the format needed for the first two args in object_code_deployment::upgrade
 
-The third arg is 0x7e4fd97ef92302eea9b10f74be1d96fb1f1511cf7ed28867b0144ca89c6ebc3c (the object address never changes)
+On mainnet, the third arg is 0x7e4fd97ef92302eea9b10f74be1d96fb1f1511cf7ed28867b0144ca89c6ebc3c (the object address never changes)
 First, in Move.toml change the [addresses] section to
 
 [addresses]
