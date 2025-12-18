@@ -47,8 +47,8 @@ Finally, run the script to extract the upgrade arguments:
 python3 extract_upgrade_args.py
 
 Output:
-    - metadata_serialized: vector<u8> from package-metadata.bcs
-    - code: vector<vector<u8>> from module .mv files    
+    - metadata_arg.txt: vector<u8> from package-metadata.bcs
+    - code_arg.txt: vector<vector<u8>> from module .mv files    
 """
 
 from pathlib import Path
