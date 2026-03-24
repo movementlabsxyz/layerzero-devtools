@@ -6,7 +6,7 @@ authors = []
 [addresses]
 oft = "_"
 oft_admin = "_"
-# movement-mainnet
+# aptos-mainnet
 oft_common = "0xcf4e1eb4b32b84266f27efe35539a9a3b7a3ec822299d8eb828ca32e581aa72c"
 router_node_0 = "0x6de27e5aa7dbee0fc32af2a92b8aa0b96e0033026ade8f22e4692cd8603220e9"
 simple_msglib = "0x52d5c6f8dcb20ed8ace8dbaa7cc09a98eb1dbec0f184720795310c031ace5111"
@@ -62,14 +62,14 @@ dvn_fee_lib_0 = "0x100003"
 dvn = "0x100002"
 
 [dependencies.AptosFramework]
-git = "https://github.com/movementlabsxyz/aptos-core.git"
-rev = "m1"
-subdir = "aptos-move/framework/aptos-framework"
+git = "https://github.com/aptos-labs/aptos-framework.git"
+rev = "99f5e915b6d231d0ffbc1aff282d36148d2a8b24"
+subdir = "aptos-framework"
 
 [dependencies]
-endpoint_v2_common = { git = "https://github.com/LayerZero-Labs/LayerZero-v2", rev = "aptos-v2-jan-6", subdir = "packages/layerzero-v2/aptos/contracts/endpoint_v2_common" }
-endpoint_v2 = { git = "https://github.com/LayerZero-Labs/LayerZero-v2", rev = "aptos-v2-jan-6", subdir = "packages/layerzero-v2/aptos/contracts/endpoint_v2" }
-oft_common = { git = "https://github.com/LayerZero-Labs/LayerZero-v2", rev = "aptos-v2-jan-6", subdir = "packages/layerzero-v2/aptos/contracts/oapps/oft_common" }
+endpoint_v2_common = { git = "https://github.com/LayerZero-Labs/LayerZero-v2", rev = "main", subdir = "packages/layerzero-v2/aptos/contracts/endpoint_v2_common" }
+endpoint_v2 = { git = "https://github.com/LayerZero-Labs/LayerZero-v2", rev = "main", subdir = "packages/layerzero-v2/aptos/contracts/endpoint_v2" }
+oft_common = { git = "https://github.com/LayerZero-Labs/LayerZero-v2", rev = "main", subdir = "packages/layerzero-v2/aptos/contracts/oapps/oft_common" }
 
 [dev-dependencies]
 simple_msglib = { git = "https://github.com/LayerZero-Labs/LayerZero-v2", rev = "main", subdir = "packages/layerzero-v2/aptos/contracts/msglib/libs/simple_msglib" }

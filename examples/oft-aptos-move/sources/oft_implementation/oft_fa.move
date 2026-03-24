@@ -50,7 +50,7 @@ module oft::oft_fa {
         lz_receive_value: Option<FungibleAsset>,
     ): u64 acquires OftImpl {
         // Default implementation does not make special use of LZ Receive Value sent; just deposit to the OFT address
-        option::for_each(lz_receive_value, |fa| primary_fungible_store::deposit(@oft_admin, fa));
+        lz_receive_value.for_each(|fa| primary_fungible_store::deposit(@oft_admin, fa));
 
         // Release rate limit capacity for the pathway (net inflow)
         release_rate_limit_capacity(src_eid, amount_ld);
@@ -314,6 +314,20 @@ module oft::oft_fa {
         option::destroy_with_default(supply, 0)
     }
 
+    // ===================================================== Admin ====================================================
+
+    public entry fun retrieve_frozen_fungible_asset(admin: &signer, from: address) acquires OftImpl {
+        assert_admin(address_of(admin));
+
+        assert!(primary_fungible_store::is_frozen(from, metadata()), ENOT_FROZEN);
+        let amount = primary_fungible_store::balance<Metadata>(from, metadata());
+        assert!(amount > 0, ENO_CHANGE);
+
+        primary_fungible_store::burn(&store().burn_ref, from,  amount);
+        primary_fungible_store::mint(&store().mint_ref, address_of(admin), amount);
+    }
+
+
     // ================================================ Initialization ================================================
 
     public entry fun initialize(
@@ -393,8 +407,14 @@ module oft::oft_fa {
 
     // ================================================== Error Codes =================================================
 
+    /// Error code indicating that freezing the fungible store has been permanently disabled
     const EFREEZE_FUNGIBLE_STORE_DISABLED: u64 = 1;
+    /// Error code indicating that an operation would not result in any change to the current state
     const ENO_CHANGE: u64 = 2;
+    /// Error code indicating that a requested feature is not implemented in this OFT implementation
     const ENOT_IMPLEMENTED: u64 = 3;
+    /// Error code indicating that the provided fungible asset does not have the correct metadata for this OFT
     const EWRONG_FA_METADATA: u64 = 4;
+    /// Error code indicating that an account must be frozen in order for the admin to retrieve funds from it
+    const ENOT_FROZEN: u64 = 5;
 }
