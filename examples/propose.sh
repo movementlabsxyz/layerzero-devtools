@@ -8,6 +8,7 @@ set -u
 set -o pipefail
 
 multisig_address="0x98ebb7985c84a89972022edf391bdaa7d95f061d9742efb3703de368413431e1"
+# WETH.e OApp Address
 oft_fa="0x3dfe1ac4574c7dbbe6f1c5ba862de88fc3e7d3cf8eba95ef1abf32b582889e6d"
 
 # ---- Upgrade oft_fa module ----
