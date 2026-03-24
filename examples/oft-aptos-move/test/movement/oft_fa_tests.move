@@ -21,6 +21,8 @@ module oft::oft_fa_tests {
     use oft::oft_store;
     use oft_common::oft_limit::new_unbounded_oft_limit;
 
+    use oft_fa;
+
     const MAXU64: u64 = 0xffffffffffffffff;
 
     const LOCAL_EID: u32 = 101;
