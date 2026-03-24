@@ -1,7 +1,9 @@
+.anchor
 node_modules
 .env
 coverage
 coverage.json
+target
 typechain
 typechain-types
 
@@ -21,6 +23,3 @@ pnpm-error.log
 # Editor and OS files
 .DS_Store
 .idea
-
-# Build artifacts
-target/

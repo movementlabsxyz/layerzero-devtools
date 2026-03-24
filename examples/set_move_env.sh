@@ -126,7 +126,7 @@ dvn = "0xdf8f0a53b20f1656f998504b81259698d126523a31bdbbae45ba1e8a3078d8da"'
         aptos)
             framework_dep='[dependencies.AptosFramework]
 git = "https://github.com/aptos-labs/aptos-framework.git"
-rev = "99f5e915b6d231d0ffbc1aff282d36148d2a8b24"
+rev = "mainnet"
 subdir = "aptos-framework"'
             ;;
         movement)
