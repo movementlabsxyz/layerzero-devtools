@@ -17,8 +17,6 @@ set_move_env movement mainnet oft-aptos-move
 
 payload_file="$(mktemp /tmp/oft_fa_upgrade_payload.XXXX.json)"
 
-movement multisig 
-
 movement move build-publish-payload \
 	--package-dir oft-aptos-move \
 	--named-addresses oft="$oft_fa",oft_admin="$multisig_address" \
