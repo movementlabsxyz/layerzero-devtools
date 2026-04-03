@@ -1,19 +1,18 @@
+.anchor
 node_modules
 .env
 coverage
 coverage.json
+target
 typechain
 typechain-types
-build/
 
 # Hardhat files
 cache
 artifacts
 
-
 # LayerZero specific files
 .layerzero
-transactions
 
 # foundry test compilation files
 out
@@ -24,13 +23,3 @@ pnpm-error.log
 # Editor and OS files
 .DS_Store
 .idea
-
-.aptos
-.movement
-shell-scripts
-
-transactions/*
-!transactions/.gitkeep
-
-.movement
-.aptos

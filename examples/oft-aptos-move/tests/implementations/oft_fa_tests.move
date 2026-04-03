@@ -580,4 +580,83 @@ module oft::oft_fa_tests {
         primary_fungible_store::deposit(@0x1234, tokens);
         assert!(primary_fungible_store::balance<Metadata>(@0x1234, oft::oft::metadata()) == 150, 5);
     }
+
+    #[test]
+    #[expected_failure(abort_code = oft::oft_fa::ENOT_FROZEN)]
+    fun test_retrieve_frozen_fungible_asset_should_fail_if_not_frozen() {
+        setup();
+
+        let admin = &create_signer_for_test(@oft_admin);
+        let user = @0x1234;
+        create_account_for_test(user);
+
+        // deposit some tokens to the user's account
+        primary_fungible_store::deposit(user, oft_fa::mint_tokens_for_test(10_000));
+
+        // retrieve the frozen funds
+        oft_fa::retrieve_frozen_fungible_asset(admin, user);
+    }
+
+    #[test]
+    #[expected_failure(abort_code = oft::oft_fa::ENO_CHANGE)]
+    fun test_retrieve_frozen_fungible_asset_should_fail_if_no_balance() {
+         setup();
+
+        let admin = &create_signer_for_test(@oft_admin);
+        let user = @0x1234;
+        create_account_for_test(user);
+
+        // freeze the user's primary fungible store
+        oft_fa::set_primary_fungible_store_frozen(admin, user, true);
+
+        // retrieve the frozen funds
+        oft_fa::retrieve_frozen_fungible_asset(admin, user);
+    }
+
+     #[test]
+    #[expected_failure(abort_code = oft::oapp_core::EUNAUTHORIZED)]
+    fun test_retrieve_frozen_fungible_asset_should_fail_if_not_admin() {
+        setup();
+
+        let admin = &create_signer_for_test(@oft_admin);
+        let user = @0x1234;
+        let malicious = &create_signer_for_test(@0x9999);
+
+        create_account_for_test(user);
+
+        // deposit some tokens to the user's account
+        primary_fungible_store::deposit(user, oft_fa::mint_tokens_for_test(10_000));
+
+        // freeze the user's primary fungible store
+        oft_fa::set_primary_fungible_store_frozen(admin, user, true);
+
+        // retrieve the frozen funds
+        oft_fa::retrieve_frozen_fungible_asset(malicious, user);
+    }
+
+    #[test]
+    fun test_retrieve_frozen_fungible_asset() {
+        setup();
+
+        let admin = &create_signer_for_test(@oft_admin);
+        let user = @0x1234;
+        create_account_for_test(user);
+
+        // deposit some tokens to the user's account
+        primary_fungible_store::deposit(user, oft_fa::mint_tokens_for_test(10_000));
+
+        // freeze the user's primary fungible store
+        oft_fa::set_primary_fungible_store_frozen(admin, user, true);
+
+        // retrieve the frozen funds
+        oft_fa::retrieve_frozen_fungible_asset(admin, user);
+
+        // check that the user's balance is now 0
+        let user_balance = primary_fungible_store::balance(user, oft_fa::metadata());
+        assert!(user_balance == 0, 0);
+
+        // check that the admin's balance has increased by the retrieved amount
+        let admin_balance = primary_fungible_store::balance(@oft_admin, oft_fa::metadata());
+        assert!(admin_balance == 10_000, 1);
+    }
 }
